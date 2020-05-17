@@ -4,10 +4,11 @@ namespace App\Application\Actions\OAuth2;
 
 use App\Application\Actions\Action;
 use Psr\Http\Message\ResponseInterface as Response;
-use Slim\Psr7\Stream;
 
 class ActionAuthCode extends Action
 {
+    private const URL_ACCESS_TOKEN = 'http://localhost/access_token';
+
     protected function action(): Response
     {
         $response = $this->response;
@@ -24,7 +25,7 @@ class ActionAuthCode extends Action
         ];
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, "http://localhost/access_token");
+        curl_setopt($curl, CURLOPT_URL, self::URL_ACCESS_TOKEN);
         curl_setopt($curl, CURLOPT_VERBOSE, 1);
         curl_setopt($curl, CURLOPT_HEADER, 0);
         curl_setopt($curl, CURLOPT_POST, 1);

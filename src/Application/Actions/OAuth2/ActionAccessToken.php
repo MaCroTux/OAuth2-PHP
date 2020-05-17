@@ -8,13 +8,16 @@ use App\Infrastructure\Persistence\AuthCode\InMemoryAuthCodeRepository;
 use App\Infrastructure\Persistence\Client\InMemoryClientRepository;
 use App\Infrastructure\Persistence\RefreshToken\InMemoryRefreshTokenRepository;
 use App\Infrastructure\Persistence\Scope\InMemoryScopeRepository;
+use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use DateInterval;
 use Exception;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
 
@@ -34,6 +37,7 @@ class ActionAccessToken extends Action
         $accessTokenRepository = new InMemoryAccessTokenRepository(); // instance of AccessTokenRepositoryInterface
         $authCodeRepository = new InMemoryAuthCodeRepository(); // instance of AuthCodeRepositoryInterface
         $refreshTokenRepository = new InMemoryRefreshTokenRepository(); // instance of RefreshTokenRepositoryInterface
+        $userRepository = new InMemoryUserRepository(); // instance of UserRepositoryInterface
 
         // Path to public and private keys
         $privateKey = 'file:///keys/private.key';
@@ -51,10 +55,19 @@ class ActionAccessToken extends Action
             $encryptionKey
         );
 
+        if ($grantType === 'password') {
+            $grant = new PasswordGrant(
+                $userRepository,
+                $refreshTokenRepository
+            );
+        }
+
         if ($grantType === 'refresh_token') {
             $grant = new RefreshTokenGrant($refreshTokenRepository);
             $grant->setRefreshTokenTTL(new DateInterval('P1M')); // new refresh tokens will expire after 1 month
-        } else {
+        }
+
+        if ($grantType === 'authorization_code') {
             $grant = new AuthCodeGrant(
                 $authCodeRepository,
                 $refreshTokenRepository,

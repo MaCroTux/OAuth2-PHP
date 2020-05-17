@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Persistence\Client;
 
-use App\Domain\Client\Client;
 use App\Domain\Client\ClientEntity;
 use App\Domain\User\UserNotFoundException;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
@@ -24,7 +23,7 @@ class InMemoryClientRepository implements ClientRepositoryInterface
     {
         $this->clients = $clients ?? [
             'credential' => new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', 'http://127.0.0.1', true),
-            'code' => new ClientEntity('code', 'xxxx', ['admin'], 'authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/auth_code', true),
+            'code' => new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/auth_code', true),
         ];
     }
 

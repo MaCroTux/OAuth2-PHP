@@ -8,25 +8,16 @@ use League\OAuth2\Server\Entities\UserEntityInterface;
 
 class User implements JsonSerializable, UserEntityInterface
 {
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     private $id;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $username;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $firstName;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $lastName;
+    /** @var string */
+    private $pass;
 
     /**
      * @param int|null  $id
@@ -34,12 +25,13 @@ class User implements JsonSerializable, UserEntityInterface
      * @param string    $firstName
      * @param string    $lastName
      */
-    public function __construct(?int $id, string $username, string $firstName, string $lastName)
+    public function __construct(?int $id, string $username, string $firstName, string $lastName, string $pass)
     {
         $this->id = $id;
         $this->username = strtolower($username);
         $this->firstName = ucfirst($firstName);
         $this->lastName = ucfirst($lastName);
+        $this->pass = $pass;
     }
 
     /**
@@ -89,6 +81,11 @@ class User implements JsonSerializable, UserEntityInterface
 
     public function getIdentifier()
     {
-        return $this->id;
+        return $this->getId();
+    }
+
+    public function checkPass(string $pass): bool
+    {
+        return $this->pass === $pass;
     }
 }
