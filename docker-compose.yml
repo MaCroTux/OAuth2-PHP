@@ -1,0 +1,60 @@
+version: "2.1"
+services:
+
+  db_oauth2:
+    image: percona
+    container_name: oauth2_percona
+    ports:
+      - "3311:3306"
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=root --execute \"SHOW DATABASES;\""
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - default
+
+  server:
+    image: php:7.4-cli-mysql-xdebug
+    build: .
+    container_name: oauth2_server
+    working_dir: /var/www/html/
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+      - oauth_logs:/var/www/html/logs
+      - ./etc/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./private.key:/keys/private.key
+      - ./public.key:/keys/public.key
+    environment:
+      XDEBUG_CONFIG: "remote_enable=1 remote_host=$XDEBUG_HOST remote_port=9000 idekey=oauth2 remote_autostart=1"
+      PHP_IDE_CONFIG: "serverName=oauth2"
+    links:
+      - db_oauth2
+      - memcached
+    depends_on:
+      db_oauth2:
+        condition: service_healthy
+    networks:
+      - default
+
+  memcached:
+    container_name: oauth2_memcached
+    image: memcached
+    ports:
+      - "11211:11211"
+    networks:
+      - default
+
+volumes:
+  oauth_logs:
+
+networks:
+  default:
+    external:
+      name: redlocal
