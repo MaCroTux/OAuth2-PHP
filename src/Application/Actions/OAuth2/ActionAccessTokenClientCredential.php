@@ -11,20 +11,43 @@ use Exception;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
+use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Stream;
 
 class ActionAccessTokenClientCredential extends Action
 {
+    /** @var ClientRepositoryInterface */
+    private $clientRepository;
+    /** @var ScopeRepositoryInterface */
+    private $scopeRepository;
+    /** @var AccessTokenRepositoryInterface */
+    private $accessTokenRepository;
+
+    public function __construct(
+        LoggerInterface $logger,
+        ClientRepositoryInterface $clientRepository,
+        ScopeRepositoryInterface $scopeRepository,
+        AccessTokenRepositoryInterface $accessTokenRepository
+    ) {
+        parent::__construct($logger);
+
+        $this->clientRepository = $clientRepository;
+        $this->scopeRepository = $scopeRepository;
+        $this->accessTokenRepository = $accessTokenRepository;
+    }
     protected function action(): Response
     {
         $request = $this->request;
         $response = $this->response;
 
         // Init our repositories
-        $clientRepository = new InMemoryClientRepository(); // instance of ClientRepositoryInterface
-        $scopeRepository = new InMemoryScopeRepository(); // instance of ScopeRepositoryInterface
-        $accessTokenRepository = new InMemoryAccessTokenRepository(); // instance of AccessTokenRepositoryInterface
+        $this->clientRepository = new InMemoryClientRepository(); // instance of ClientRepositoryInterface
+        $this->scopeRepository = new InMemoryScopeRepository(); // instance of ScopeRepositoryInterface
+        $this->accessTokenRepository = new InMemoryAccessTokenRepository(); // instance of AccessTokenRepositoryInterface
 
         // Path to public and private keys
         $privateKey = 'file:///keys/private.key';
@@ -35,9 +58,9 @@ class ActionAccessTokenClientCredential extends Action
 
         // Setup the authorization server
         $server = new AuthorizationServer(
-            $clientRepository,
-            $accessTokenRepository,
-            $scopeRepository,
+            $this->clientRepository,
+            $this->accessTokenRepository,
+            $this->scopeRepository,
             $privateKey,
             $encryptionKey
         );

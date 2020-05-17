@@ -4,32 +4,54 @@ namespace App\Application\Actions\OAuth2;
 
 use App\Application\Actions\Action;
 use App\Domain\User\User;
-use App\Infrastructure\Persistence\AccessToken\InMemoryAccessTokenRepository;
-use App\Infrastructure\Persistence\AuthCode\InMemoryAuthCodeRepository;
-use App\Infrastructure\Persistence\Client\InMemoryClientRepository;
-use App\Infrastructure\Persistence\RefreshToken\InMemoryRefreshTokenRepository;
-use App\Infrastructure\Persistence\Scope\InMemoryScopeRepository;
 use DateInterval;
 use Exception;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
+use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
+use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
+use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
+use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Stream;
 
 class ActionAuthorize extends Action
 {
+    /** @var ClientRepositoryInterface */
+    private $clientRepository;
+    /** @var ScopeRepositoryInterface */
+    private $scopeRepository;
+    /** @var AccessTokenRepositoryInterface */
+    private $accessTokenRepository;
+    /** @var AuthCodeRepositoryInterface */
+    private $authCodeRepository;
+    /** @var RefreshTokenRepositoryInterface */
+    private $refreshTokenRepository;
+
+    public function __construct(
+        LoggerInterface $logger,
+        ClientRepositoryInterface $clientRepository,
+        ScopeRepositoryInterface $scopeRepository,
+        AccessTokenRepositoryInterface $accessTokenRepository,
+        AuthCodeRepositoryInterface $authCodeRepository,
+        RefreshTokenRepositoryInterface $refreshTokenRepository
+    ) {
+        parent::__construct($logger);
+
+        $this->clientRepository = $clientRepository;
+        $this->scopeRepository = $scopeRepository;
+        $this->accessTokenRepository = $accessTokenRepository;
+        $this->authCodeRepository = $authCodeRepository;
+        $this->refreshTokenRepository = $refreshTokenRepository;
+    }
+
     protected function action(): Response
     {
         $request = $this->request;
         $response = $this->response;
-
-        // Init our repositories
-        $clientRepository = new InMemoryClientRepository(); // instance of ClientRepositoryInterface
-        $scopeRepository = new InMemoryScopeRepository(); // instance of ScopeRepositoryInterface
-        $accessTokenRepository = new InMemoryAccessTokenRepository(); // instance of AccessTokenRepositoryInterface
-        $authCodeRepository = new InMemoryAuthCodeRepository(); // instance of AuthCodeRepositoryInterface
-        $refreshTokenRepository = new InMemoryRefreshTokenRepository(); // instance of RefreshTokenRepositoryInterface
 
         // Path to public and private keys
         $privateKey = 'file:///keys/private.key';
@@ -37,16 +59,16 @@ class ActionAuthorize extends Action
 
         // Setup the authorization server
         $server = new AuthorizationServer(
-            $clientRepository,
-            $accessTokenRepository,
-            $scopeRepository,
+            $this->clientRepository,
+            $this->accessTokenRepository,
+            $this->scopeRepository,
             $privateKey,
             $encryptionKey
         );
 
         $grant = new AuthCodeGrant(
-            $authCodeRepository,
-            $refreshTokenRepository,
+            $this->authCodeRepository,
+            $this->refreshTokenRepository,
             new DateInterval('PT10M') // authorization codes will expire after 10 minutes
         );
 
