@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 use App\Infrastructure\Persistence\AccessToken\InMemoryAccessTokenRepository;
 use App\Infrastructure\Persistence\AuthCode\InMemoryAuthCodeRepository;
 use App\Infrastructure\Persistence\Client\InMemoryClientRepository;
@@ -19,9 +20,9 @@ use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
-return function (ContainerBuilder $containerBuilder) {
+return static function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
-        LoggerInterface::class => function (ContainerInterface $c) {
+        LoggerInterface::class => static function (ContainerInterface $c) {
             $settings = $c->get('settings');
 
             $loggerSettings = $settings['logger'];
@@ -35,22 +36,22 @@ return function (ContainerBuilder $containerBuilder) {
 
             return $logger;
         },
-        ClientRepositoryInterface::class => function (ContainerInterface $c) {
+        ClientRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryClientRepository();
         },
-        ScopeRepositoryInterface::class => function (ContainerInterface $c) {
+        ScopeRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryScopeRepository();
         },
-        AccessTokenRepositoryInterface::class => function (ContainerInterface $c) {
+        AccessTokenRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryAccessTokenRepository();
         },
-        AuthCodeRepositoryInterface::class => function (ContainerInterface $c) {
+        AuthCodeRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryAuthCodeRepository();
         },
-        RefreshTokenRepositoryInterface::class => function (ContainerInterface $c) {
+        RefreshTokenRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryRefreshTokenRepository();
         },
-        UserRepositoryInterface::class => function (ContainerInterface $c) {
+        UserRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryUserRepository();
         },
     ]);

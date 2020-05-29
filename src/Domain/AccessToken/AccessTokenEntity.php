@@ -2,6 +2,7 @@
 
 namespace App\Domain\AccessToken;
 
+use App\Domain\Scope\ScopeEntity;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;

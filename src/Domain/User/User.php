@@ -88,4 +88,26 @@ class User implements JsonSerializable, UserEntityInterface
     {
         return $this->pass === $pass;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
+            'pass' => $this->pass,
+        ];
+    }
+
+    public static function fromArray($user): self
+    {
+        return new self(
+            $user['id'],
+            $user['username'],
+            $user['firstName'],
+            $user['lastName'],
+            $user['pass']
+        );
+    }
 }

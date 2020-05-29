@@ -1,5 +1,8 @@
 <?php
+
 declare(strict_types=1);
+
+const STOGARE = 'jsonFile';
 
 use App\Application\Handlers\HttpErrorHandler;
 use App\Application\Handlers\ShutdownHandler;
@@ -22,7 +25,12 @@ $settings = require __DIR__ . '/../app/settings.php';
 $settings($containerBuilder);
 
 // Set up dependencies
-$dependencies = require __DIR__ . '/../app/dependencies.php';
+if (STOGARE === 'jsonFile') {
+    $dependencies = require __DIR__ . '/../app/dependencies_in_json_file.php';
+} else {
+    $dependencies = require __DIR__ . '/../app/dependencies_in_memory.php';
+}
+
 $dependencies($containerBuilder);
 
 // Set up repositories

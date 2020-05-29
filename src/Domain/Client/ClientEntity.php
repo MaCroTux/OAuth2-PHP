@@ -83,4 +83,30 @@ class ClientEntity implements ClientEntityInterface
             $this->confidential
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->identifier,
+            'name' => $this->name,
+            'redirectUri' => $this->redirectUri,
+            'confidential' => $this->confidential,
+            'secret' => $this->secret,
+            'scope' => json_encode($this->scope),
+            'grantType' => $this->grantType,
+        ];
+    }
+
+    public static function formArray(array $client): self
+    {
+        return new self(
+            $client['id'],
+            $client['secret'],
+            json_decode($client['scope'], true),
+            $client['grantType'],
+            $client['name'],
+            $client['redirectUri'],
+            (bool)$client['confidential']
+        );
+    }
 }

@@ -29,4 +29,16 @@ class ScopeEntity implements ScopeEntityInterface
     {
         return json_encode($this);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->identifier
+        ];
+    }
+
+    public static function fromArray(array $scope)
+    {
+        return new self($scope['id']);
+    }
 }
