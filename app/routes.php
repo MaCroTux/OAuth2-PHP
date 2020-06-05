@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+use App\Application\Actions\Login\ActionLogin;
+use App\Application\Actions\Login\ActionLoginAuthorize;
 use App\Application\Actions\OAuth2\ActionAccessToken;
 use App\Application\Actions\OAuth2\ActionAccessTokenClientCredential;
 use App\Application\Actions\OAuth2\ActionAuthCode;
@@ -34,6 +37,6 @@ return function (App $app) {
     $app->get('/authorize', ActionAuthorize::class);
     $app->get('/auth_code', ActionAuthCode::class);
 
-
-
+    $app->get('/login', ActionLogin::class);
+    $app->post('/login', ActionLoginAuthorize::class);
 };
