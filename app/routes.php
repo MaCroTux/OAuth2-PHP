@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Application\Actions\ActionIndex;
 use App\Application\Actions\Login\ActionLogin;
 use App\Application\Actions\Login\ActionLoginAuthorize;
 use App\Application\Actions\OAuth2\ActionAccessToken;
@@ -20,11 +21,7 @@ return function (App $app) {
         return $response;
     });
 
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Welcome to Oauth2 Server!');
-
-        return $response;
-    });
+    $app->get('/', ActionIndex::class);
 
     $app->group('/users', function (Group $group) {
         $group->get('', ListUsersAction::class);

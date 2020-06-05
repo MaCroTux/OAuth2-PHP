@@ -121,4 +121,15 @@ abstract class Action
                     ->withHeader('Content-Type', 'application/json')
                     ->withStatus($payload->getStatusCode());
     }
+
+    protected function loadTemplate(string $template, ?Stream $stream = null): Response
+    {
+        if (null === $stream) {
+            $stream = new Stream('');
+        }
+
+        $stream->write(file_get_contents('../template/' . $template));
+
+        return $this->response->withBody($stream);
+    }
 }

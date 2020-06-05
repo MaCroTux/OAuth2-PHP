@@ -20,7 +20,6 @@ class ActionLogin extends Action
             $stream->write($message);
         }
 
-        $stream->write(file_get_contents('../template/login.html'));
-        return $this->response->withBody($stream);
+        return $this->loadTemplate('login.html', $stream);
     }
 }

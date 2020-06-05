@@ -24,7 +24,7 @@ class JsonFileClientRepository implements ClientRepositoryInterface
     public function provisioning()
     {
         $clientDefault1 = new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', 'http://127.0.0.1', true);
-        $clientDefault2 = new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/auth_code', true);
+        $clientDefault2 = new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/', true);
 
         $this->addDefaultClient($clientDefault1);
         $this->addDefaultClient($clientDefault2);

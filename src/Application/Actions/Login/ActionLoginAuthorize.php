@@ -3,11 +3,27 @@
 namespace App\Application\Actions\Login;
 
 use App\Application\Actions\Action;
-use App\Application\Actions\Stream;
+use App\Application\CurlService;
+use Lcobucci\JWT\Claim;
+use Lcobucci\JWT\Parser;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 
 class ActionLoginAuthorize extends Action
 {
+    /**
+     * @var ClientRepositoryInterface
+     */
+    private $clientRepository;
+
+    public function __construct(LoggerInterface $logger, ClientRepositoryInterface $clientRepository)
+    {
+        parent::__construct($logger);
+
+        $this->clientRepository = $clientRepository;
+    }
+
     protected function action(): Response
     {
         $request = $this->request;
@@ -21,9 +37,33 @@ class ActionLoginAuthorize extends Action
             return $response->withHeader('Location' , '/login?message='.base64_encode('User name or password not be empty'));
         }
 
+        $tokens = $this->getTokenAccess($serverParams, $userName, $password);
+
+        if (!isset($tokens['error'])) {
+            $expireIn = time()+$tokens['expires_in'];
+            setcookie('jwt',$tokens['access_token'], $expireIn, '/', $serverParams['HTTP_HOST']);
+            setcookie('refresh',$tokens['refresh_token'], $expireIn + (30*24*30*30), '/', $serverParams['HTTP_HOST']);
+
+            $token = (new Parser())->parse($tokens['access_token']);
+            /** @var Claim $claim */
+            $claim = $token->getClaims()['aud'];
+            $clientId = $claim->getValue();
+
+            $redirect = $this->clientRepository->getClientEntity($clientId)->getRedirectUri();
+
+            return $response->withHeader('Location' , $redirect . '?access_token=' . $tokens['access_token'] . '&refresh_token=' . $tokens['refresh_token']);
+        }
+
+        return $response->withHeader('Location' , '/?message=' . base64_encode('User o password incorrect!'));
+    }
+
+    private function getTokenAccess(array $serverParams, string $userName, string $password): array
+    {
         $domain = $serverParams['HTTP_ORIGIN'];
-        $oauthResponse = $this->sendCurl(
-            $domain . '/access_token',
+        $curlService = new CurlService($domain);
+
+        $oauthResponse = $curlService->__invoke(
+            '/access_token',
             [
                 'grant_type' => 'password',
                 'client_id' => 'code',
@@ -34,31 +74,6 @@ class ActionLoginAuthorize extends Action
             ]
         );
 
-        $tokens = json_decode($oauthResponse, true);
-        $expireIn = time()+$tokens['expires_in'];
-        setcookie('jwt',$tokens['access_token'], $expireIn, '/', $serverParams['HTTP_HOST']);
-        setcookie('refresh',$tokens['refresh_token'], $expireIn + (30*24*30*30), '/', $serverParams['HTTP_HOST']);
-
-        return $response->withBody(new Stream('Login is success'));
-    }
-
-    private function sendCurl(string $url, array $data): string
-    {
-        //create a new cURL resource
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        //attach encoded JSON string to the POST fields
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-
-        //return response instead of outputting
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        //execute the POST request
-        $result = curl_exec($ch);
-
-        //close cURL resource
-        curl_close($ch);
-
-        return $result;
+        return json_decode($oauthResponse, true);
     }
 }
