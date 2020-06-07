@@ -4,6 +4,7 @@ namespace App\Application\Actions\Login;
 
 use App\Application\Actions\Action;
 use App\Application\CurlService;
+use App\Application\ServerParameter;
 use Lcobucci\JWT\Claim;
 use Lcobucci\JWT\Parser;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
@@ -27,7 +28,6 @@ class ActionLoginAuthorize extends Action
     protected function action(): Response
     {
         $request = $this->request;
-        $serverParams = $request->getServerParams();
         $response = $this->response;
         $form = $request->getParsedBody();
         $userName = $form['username'];
@@ -37,12 +37,12 @@ class ActionLoginAuthorize extends Action
             return $response->withHeader('Location' , '/login?message='.base64_encode('User name or password not be empty'));
         }
 
-        $tokens = $this->getTokenAccess($serverParams, $userName, $password);
+        $tokens = $this->getTokenAccess(ServerParameter::httpHost(), $userName, $password);
 
         if (!isset($tokens['error'])) {
             $expireIn = time()+$tokens['expires_in'];
-            setcookie('jwt',$tokens['access_token'], $expireIn, '/', $serverParams['HTTP_HOST']);
-            setcookie('refresh',$tokens['refresh_token'], $expireIn + (30*24*30*30), '/', $serverParams['HTTP_HOST']);
+            setcookie('jwt',$tokens['access_token'], $expireIn, '/', ServerParameter::host());
+            setcookie('refresh',$tokens['refresh_token'], $expireIn + (30*24*30*30), '/', ServerParameter::host());
 
             $token = (new Parser())->parse($tokens['access_token']);
             /** @var Claim $claim */
@@ -57,9 +57,8 @@ class ActionLoginAuthorize extends Action
         return $response->withHeader('Location' , '/?message=' . base64_encode('User o password incorrect!'));
     }
 
-    private function getTokenAccess(array $serverParams, string $userName, string $password): array
+    private function getTokenAccess(string $domain, string $userName, string $password): array
     {
-        $domain = $serverParams['HTTP_ORIGIN'];
         $curlService = new CurlService($domain);
 
         $oauthResponse = $curlService->__invoke(

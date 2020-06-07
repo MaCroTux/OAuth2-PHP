@@ -19,11 +19,11 @@ class InMemoryClientRepository implements ClientRepositoryInterface
      *
      * @param array|null $clients
      */
-    public function __construct(array $clients = null)
+    public function __construct(array $clients = null, string $domain)
     {
         $this->clients = $clients ?? [
-            'credential' => new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', 'http://127.0.0.1', true),
-            'code' => new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/auth_code', true),
+            'credential' => new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', $domain, true),
+            'code' => new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', $domain . '/auth_code', true),
         ];
     }
 

@@ -7,16 +7,16 @@ all: Dockerfile composer-install ## Up containers
 composer-install:
 	docker run --rm -it -v $(PWD):/app composer install
 
-up: Dockerfile src public app ## Down containers
+up: Dockerfile src html app ## Down containers
 	export XDEBUG_HOST=0.0.0.0; docker-compose up -d server
 	docker-compose exec server bash -c "chown www-data:www-data /var/www/html/logs -R"
 
-down: Dockerfile src public app ## Up containers
+down: Dockerfile src html app ## Up containers
 	docker-compose down
 
 restart: down up  ## Reset containers
 
-reset-apache: Dockerfile src public app  ## Reset server
+reset-apache: Dockerfile src html app  ## Reset server
 	docker-compose exec server apache2ctl -t
 
 composer: ## Instalar Composer

@@ -11,6 +11,8 @@ class ActionAuthCode extends Action
 
     protected function action(): Response
     {
+        $request = $this->request;
+        $serverParams = $request->getServerParams();
         $response = $this->response;
         $parseRequest =$this->request->getQueryParams();
 
@@ -20,7 +22,7 @@ class ActionAuthCode extends Action
             'grant_type' => 'authorization_code',
             'client_id' => 'code',
             'client_secret' => 'xxxx',
-            'redirect_uri' => 'http://127.0.0.1/auth_code',
+            'redirect_uri' => $serverParams['HTTP_ORIGIN'] . '/auth_code',
             'code' => $code,
         ];
 

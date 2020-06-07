@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+
+use App\Application\ServerParameter;
 use App\Infrastructure\Persistence\AccessToken\JsonFileAccessTokenRepository;
 use App\Infrastructure\Persistence\AuthCode\JsonFileAuthCodeRepository;
 use App\Infrastructure\Persistence\Client\JsonFileClientRepository;
@@ -37,10 +39,10 @@ return static function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
         ClientRepositoryInterface::class => static function (ContainerInterface $c) {
+            $domain = ServerParameter::httpHost();
             /** @var JSONDB $db */
             $db = $c->get(JSONDB::class);
-
-            return new JsonFileClientRepository($db);
+            return new JsonFileClientRepository($db, $domain);
         },
         ScopeRepositoryInterface::class => static function (ContainerInterface $c) {
             /** @var JSONDB $db */

@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Application\ServerParameter;
 use App\Infrastructure\Persistence\AccessToken\InMemoryAccessTokenRepository;
 use App\Infrastructure\Persistence\AuthCode\InMemoryAuthCodeRepository;
 use App\Infrastructure\Persistence\Client\InMemoryClientRepository;
@@ -37,7 +38,8 @@ return static function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
         ClientRepositoryInterface::class => static function (ContainerInterface $c) {
-            return new InMemoryClientRepository();
+            $domain = ServerParameter::httpHost();
+            return new InMemoryClientRepository(null, $domain);
         },
         ScopeRepositoryInterface::class => static function (ContainerInterface $c) {
             return new InMemoryScopeRepository();

@@ -14,17 +14,20 @@ class JsonFileClientRepository implements ClientRepositoryInterface
 
     /** @var JSONDB */
     private $jsonDb;
+    /** @var string */
+    private $domain;
 
-    public function __construct(JSONDB $jsonDb)
+    public function __construct(JSONDB $jsonDb, string $domain)
     {
         $this->jsonDb = $jsonDb;
+        $this->domain = $domain;
         $this->provisioning();
     }
 
     public function provisioning()
     {
-        $clientDefault1 = new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', 'http://127.0.0.1', true);
-        $clientDefault2 = new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', 'http://127.0.0.1/', true);
+        $clientDefault1 = new ClientEntity('credential', 'xxxx', ['admin'], 'client_credentials', 'Debug', $this->domain, true);
+        $clientDefault2 = new ClientEntity('code', 'xxxx', ['admin'], 'password,authorization_code,refresh_token', 'Debug', $this->domain, true);
 
         $this->addDefaultClient($clientDefault1);
         $this->addDefaultClient($clientDefault2);

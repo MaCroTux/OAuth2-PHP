@@ -3,6 +3,7 @@
 namespace App\Application\Actions\OAuth2;
 
 use App\Application\Actions\Action;
+use App\Application\ServerParameter;
 use App\Infrastructure\Persistence\AccessToken\InMemoryAccessTokenRepository;
 use App\Infrastructure\Persistence\Client\InMemoryClientRepository;
 use App\Infrastructure\Persistence\Scope\InMemoryScopeRepository;
@@ -45,7 +46,7 @@ class ActionAccessTokenClientCredential extends Action
         $response = $this->response;
 
         // Init our repositories
-        $this->clientRepository = new InMemoryClientRepository(); // instance of ClientRepositoryInterface
+        $this->clientRepository = new InMemoryClientRepository(null, ServerParameter::httpHost()); // instance of ClientRepositoryInterface
         $this->scopeRepository = new InMemoryScopeRepository(); // instance of ScopeRepositoryInterface
         $this->accessTokenRepository = new InMemoryAccessTokenRepository(); // instance of AccessTokenRepositoryInterface
 
