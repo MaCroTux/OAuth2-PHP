@@ -8,8 +8,20 @@ class ServerParameter
     {
         return $_SERVER['HTTP_HOST'];
     }
+
     public static function httpHost(): string
     {
-        return $_SERVER['REQUEST_SCHEME'] . '://' .$_SERVER['HTTP_HOST'];
+        $testDomain = [
+            '127.0.0.1',
+            'localhost'
+        ];
+
+        $scheme = $_SERVER['REQUEST_SCHEME'];
+
+        if (!in_array($_SERVER['HTTP_HOST'], $testDomain)) {
+            $scheme = 'https';
+        }
+
+        return $scheme . '://' .$_SERVER['HTTP_HOST'];
     }
 }
