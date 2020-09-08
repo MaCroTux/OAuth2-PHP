@@ -19,12 +19,12 @@ services:
       - default
 
   server:
-    image: php:7.4-cli-mysql-xdebug
     build: .
     container_name: oauth2_server
     working_dir: /var/www/html/
     ports:
       - "80:80"
+      - "433:433"
     volumes:
       - ./:/var/www
       - oauth_logs:/var/www/html/logs
@@ -32,6 +32,7 @@ services:
     environment:
       XDEBUG_CONFIG: "remote_enable=1 remote_host=$XDEBUG_HOST remote_port=9000 idekey=oauth2 remote_autostart=1"
       PHP_IDE_CONFIG: "serverName=oauth2"
+      docker: "1"
     links:
       - db_oauth2
       - memcached

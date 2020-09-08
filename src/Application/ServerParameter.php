@@ -13,7 +13,8 @@ class ServerParameter
     {
         $testDomain = [
             '127.0.0.1',
-            'localhost'
+            'localhost',
+            'local-auth.javierferia.com',
         ];
 
         $scheme = $_SERVER['REQUEST_SCHEME'];

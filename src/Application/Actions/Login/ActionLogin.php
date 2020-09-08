@@ -20,6 +20,8 @@ class ActionLogin extends Action
             $stream->write($message);
         }
 
-        return $this->loadTemplate('login.html', $stream);
+        return $this->loadTemplate('login.html', $stream, [
+            ':referer' => $request->getServerParams()['HTTP_REFERER'] ?? '/'
+        ]);
     }
 }

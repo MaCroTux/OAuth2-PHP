@@ -122,13 +122,15 @@ abstract class Action
                     ->withStatus($payload->getStatusCode());
     }
 
-    protected function loadTemplate(string $template, ?Stream $stream = null): Response
+    protected function loadTemplate(string $template, ?Stream $stream = null, array $argument = []): Response
     {
         if (null === $stream) {
             $stream = new Stream('');
         }
 
-        $stream->write(file_get_contents('../template/' . $template));
+        $tmp = strtr(file_get_contents('../template/' . $template), $argument);
+
+        $stream->write($tmp);
 
         return $this->response->withBody($stream);
     }

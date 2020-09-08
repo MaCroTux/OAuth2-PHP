@@ -12,8 +12,10 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Google_Client;
 
-class ActionLoginAuthorize extends Action
+class ActionSocialAuthorize extends Action
 {
+    private const GOOGLE_API_KEY = '76181450114-f6n9vn157qspn85u7l3gslvf1hme0mtc.apps.googleusercontent.com';
+
     /**
      * @var ClientRepositoryInterface
      */
@@ -29,41 +31,50 @@ class ActionLoginAuthorize extends Action
     protected function action(): Response
     {
         $request = $this->request;
-        $response = $this->response;
+	    $response = $this->response;
+	    $referer = $request->getQueryParams()['referrer'] ?? null;
+        $params = $request->getParsedBody();
+        $cookies = $request->getCookieParams();
+        $accessToken = $params['credential'] ?? null;
 
-        $form = $request->getParsedBody();
-        $userName = $form['username'];
-        $password = $form['password'];
-	    $referer = $form['referer'] ?? null;
-
-        if (empty($userName) || empty($password)) {
-            return $response->withHeader('Location' , '/login?message='.base64_encode('User name or password not be empty'));
+        if (($cookies['g_csrf_token'] ?? '') !== ($params['g_csrf_token'] ?? '')) {
+            die('CSRF Token not valid!');
         }
 
-        $tokens = $this->getTokenAccess(ServerParameter::httpHost(), $userName, $password);
-	    $domain = '.javierferia.com';
+        $client = new Google_Client(['client_id' => self::GOOGLE_API_KEY]);
+
+        $result = $client->verifyIdToken($accessToken);
+
+        $user = $result['email'];
+        $pass = $result['sub'];
+
+        $tokens = $this->getTokenAccess(ServerParameter::httpHost(), $user, $pass);
+
+        $domain = '.javierferia.com';
+
         if (!isset($tokens['error'])) {
-            $expireIn = time()+$tokens['expires_in'];
+            $expireIn = time() + $tokens['expires_in'];
             setcookie('jwt',$tokens['access_token'], $expireIn, '/', $domain);
             setcookie('refresh',$tokens['refresh_token'], $expireIn + (30*24*30*30), '/', $domain);
 
             $token = (new Parser())->parse($tokens['access_token']);
+
             /** @var Claim $claim */
             $claim = $token->getClaims()['aud'];
             $clientId = $claim->getValue();
+            $redirect = $this->clientRepository->getClientEntity($clientId)->getRedirectUri();
 
             if (null !== $referer) {
                 return $response->withHeader('Location' , $referer);
             }
 
-            $redirect = $this->clientRepository->getClientEntity($clientId)->getRedirectUri();
             $redirect = empty($referer) ? $redirect : $referer;
 
             return $response->withHeader('Location' , $redirect . '?access_token=' . $tokens['access_token'] . '&refresh_token=' . $tokens['refresh_token']);
         }
 
-        return $response->withHeader('Location' , '/?message=' . base64_encode('User o password incorrect!'));
-    }
+        return $response;
+    }	
 
     private function getTokenAccess(string $domain, string $userName, string $password): array
     {

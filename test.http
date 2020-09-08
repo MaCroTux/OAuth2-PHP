@@ -1,0 +1,9 @@
+POST http://localhost/access_token
+{
+grant_type:password
+client_id:code
+client_secret:xxxx
+scope:admin
+username:bill.gates
+password:123456
+}

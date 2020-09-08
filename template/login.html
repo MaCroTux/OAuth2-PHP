@@ -21,19 +21,31 @@
     <body>
         <div class="formLogin center">
             <h1>Oauth2 Login</h1>
-            <form method="post">
+            <form method="post" action="login">
                 <div class="field">
                     <label>User name</label>
                     <input type="text" name="username"/>
                 </div>
                 <div class="field">
                     <label>Password</label>
-                    <input type="text" name="password"/>
+                    <input type="password" name="password"/>
                 </div>
                 <div class="field submit">
+		            <input type="hidden" id="referer" name="referer" value=":referer" />
                     <input type="submit"/>
                 </div>
             </form>
         </div>
+        <!-- Scripts -->
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <!-- One Tap Google -->
+        <div id="g_id_onload"
+             data-client_id="76181450114-f6n9vn157qspn85u7l3gslvf1hme0mtc.apps.googleusercontent.com"
+             data-login_uri="/social?referrer=:referer"
+             data-skip_prompt_cookie="jwt">
+        </div>
+        <!-- End One Tap Google -->
     </body>
 </html>
